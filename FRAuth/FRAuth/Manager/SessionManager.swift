@@ -14,6 +14,8 @@ import FRCore
 /// SessionManager is a representation of management class for FRAuth's managing session
 class SessionManager: NSObject {
     
+    public var delegate: FRAuthDelegate?
+    
     /// KeychainManager responsible for Keychain Service activities
     var keychainManager: KeychainManager
     /// ServerConfig instance of SessionManager
@@ -36,6 +38,12 @@ class SessionManager: NSObject {
         }
     }
     
+    func getSessionKey(_ key: String) -> String {
+        if let newKey = delegate?.keyForSession?() {
+            return "\(newKey)_\(key)"
+        }
+        return key
+    }
     
     //  MARK: - Init
     
@@ -53,7 +61,7 @@ class SessionManager: NSObject {
     /// Returns currently authenticated user object through OAuth2 service
     func getCurrentUser() -> FRUser? {
     
-        if let userData = self.keychainManager.sharedStore.getData("current_user") {
+        if let userData = self.keychainManager.sharedStore.getData(getSessionKey("current_user")) {
             do {
                 
                 if #available(iOS 11.0, *) {
@@ -87,11 +95,11 @@ class SessionManager: NSObject {
             do {
                 if #available(iOS 11.0, *) {
                     let userData = try NSKeyedArchiver.archivedData(withRootObject: thisUser, requiringSecureCoding: false)
-                    self.keychainManager.sharedStore.set(userData, key: "current_user")
+                    self.keychainManager.sharedStore.set(userData, key: getSessionKey("current_user"))
                 }
                 else {
                     let userData = NSKeyedArchiver.archivedData(withRootObject: thisUser)
-                    self.keychainManager.sharedStore.set(userData, key: "current_user")
+                    self.keychainManager.sharedStore.set(userData, key: getSessionKey("current_user"))
                 }
             }
             catch {
@@ -99,7 +107,7 @@ class SessionManager: NSObject {
             }
         }
         else {
-            self.keychainManager.sharedStore.delete("current_user")
+            self.keychainManager.sharedStore.delete(getSessionKey("current_user"))
         }
     }
     
@@ -107,8 +115,8 @@ class SessionManager: NSObject {
     //  MARK: - AccessToken
     
     /// Returns current session's AccessToken object with OAuth2 token set
-    func getAccessToken() throws -> AccessToken? {
-        if let tokenData = self.keychainManager.privateStore.getData("access_token") {
+    public func getAccessToken() throws -> AccessToken? {
+        if let tokenData = self.keychainManager.privateStore.getData(getSessionKey("access_token")) {
             do {
                 
                 if #available(iOS 11.0, *) {
@@ -137,11 +145,11 @@ class SessionManager: NSObject {
                 
                 if #available(iOS 11.0, *) {
                     let tokenData = try NSKeyedArchiver.archivedData(withRootObject: thisToken, requiringSecureCoding: true)
-                    self.keychainManager.privateStore.set(tokenData, key: "access_token")
+                    self.keychainManager.privateStore.set(tokenData, key: getSessionKey("access_token"))
                 }
                 else {
                     let tokenData = NSKeyedArchiver.archivedData(withRootObject: thisToken)
-                    self.keychainManager.privateStore.set(tokenData, key: "access_token")
+                    self.keychainManager.privateStore.set(tokenData, key: getSessionKey("access_token"))
                 }
             }
             catch {
@@ -149,7 +157,7 @@ class SessionManager: NSObject {
             }
         }
         else {
-            self.keychainManager.privateStore.delete("access_token")
+            self.keychainManager.privateStore.delete(getSessionKey("access_token"))
         }
     }
     
@@ -157,8 +165,8 @@ class SessionManager: NSObject {
     //  MARK: - SSO Token
     
     /// Returns current session's Token object that represents SSO Token
-    func getSSOToken() -> Token? {
-        if let ssoTokenString = self.keychainManager.sharedStore.getString("sso_token") {
+    public func getSSOToken() -> Token? {
+        if let ssoTokenString = self.keychainManager.sharedStore.getString(getSessionKey("sso_token")) {
             return Token(ssoTokenString)
         }
         else {
@@ -171,14 +179,13 @@ class SessionManager: NSObject {
     /// - Parameter ssoToken: Token object that represents SSO Token
     func setSSOToken(ssoToken: Token?) {
         if let token = ssoToken {
-            self.keychainManager.sharedStore.set(token.value, key: "sso_token")
+            self.keychainManager.sharedStore.set(token.value, key: getSessionKey("sso_token"))
         }
         else {
-            self.keychainManager.sharedStore.delete("sso_token")
+            self.keychainManager.sharedStore.delete(getSessionKey("sso_token"))
         }
     }
-    
-        
+
     /// Revokes currently authenticated and stored SSO Token and removes it from Keychain Service
     func revokeSSOToken() -> Void {
 
@@ -203,7 +210,8 @@ class SessionManager: NSObject {
             
             // Deletes all Cookie from Cookie Store
             FRLog.i("Deleting all cookies from Cookie Store as invalidating Session Token.")
-            self.keychainManager.cookieStore.deleteAll()
+//            self.keychainManager.cookieStore.deleteAll()
+            MultiSessionCookies.deleteAllRelatedCookies()
             
             let request = Request(url: self.serverConfig.sessionPath, method: .POST, headers: header, bodyParams: parameter, urlParams: urlParam, requestType: .json, responseType: .json, timeoutInterval: self.serverConfig.timeout)
             FRRestClient.invoke(request: request, action: Action(type: .LOGOUT)) { (result) in

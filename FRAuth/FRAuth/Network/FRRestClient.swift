@@ -11,11 +11,11 @@
 import Foundation
 import FRCore
 
-
 /// FRRestclient is FRCore's RestClient wrapper with additional functionalities for Cookie management
 @objc
 class FRRestClient: NSObject {
     
+    static public var delegate: FRAuthDelegate?
     
     //  MARK: - Invoke
     
@@ -88,13 +88,13 @@ class FRRestClient: NSObject {
             let cookies = HTTPCookie.cookies(withResponseHeaderFields: responseHeader, for: url)
             for cookie in cookies {
                 if let cookieExpDate = cookie.expiresDate, cookieExpDate.timeIntervalSince1970 < Date().timeIntervalSince1970 {
-                    frAuth.keychainManager.cookieStore.delete(cookie.name + "-" + cookie.domain)
-                    FRLog.v("[Cookies] Delete - Cookie Name: \(cookie.name)")
+                    frAuth.keychainManager.cookieStore.delete(MultiSessionCookies.prefixedCookieName(cookie.name) + "-" + cookie.domain)
+                    FRLog.i("[Cookies] Delete - Cookie Name: \(cookie.name)")
                 }
                 else {
                     let cookieData = NSKeyedArchiver.archivedData(withRootObject: cookie)
-                    frAuth.keychainManager.cookieStore.set(cookieData, key: cookie.name + "-" + cookie.domain)
-                    FRLog.v("[Cookies] Update - Cookie Name: \(cookie.name) | Cookie Value: \(cookie.value)")
+                    frAuth.keychainManager.cookieStore.set(cookieData, key: MultiSessionCookies.prefixedCookieName(cookie.name) + "-" + cookie.domain)
+                    FRLog.i("[Cookies] Update - Cookie Name: \(cookie.name) | Cookie Value: \(cookie.value)")
                 }
             }
         }
@@ -111,7 +111,7 @@ class FRRestClient: NSObject {
             
             // Iterate Cookie List and validate
             for cookieObj in cookieItems {
-                if let cookieData = cookieObj.value as? Data, let cookie = NSKeyedUnarchiver.unarchiveObject(with: cookieData) as? HTTPCookie {
+                if let cookieData = cookieObj.value as? Data, let cookie = NSKeyedUnarchiver.unarchiveObject(with: cookieData) as? HTTPCookie, MultiSessionCookies.filterWithPrefix(cookieObj.key) {
                     // When Cookie is expired, remove it from the Cookie Store
                     if cookie.isExpired {
                         frAuth.keychainManager.cookieStore.delete(cookie.name + "-" + cookie.domain)
@@ -226,3 +226,11 @@ extension HTTPCookie {
         return false
     }
 }
+
+//static func prepareCookieHeader(url: URL) -> [String: String]? {
+//// Retrieves all cookie items from cookie store
+//if let frAuth = FRAuth.shared, frAuth.serverConfig.enableCookie, let cookieItems = frAuth.keychainManager.cookieStore.allItems() {
+//  var cookieList: [HTTPCookie] = []
+//  // Iterate Cookie List and validate
+//  for cookieObj in cookieItems {
+//    if let cookieData = cookieObj.value as? Data, let cookie = NSKeyedUnarchiver.unarchiveObject(with: cookieData) as? HTTPCookie, cookie.name.hasPrefix("PREFIX") {

@@ -16,6 +16,17 @@ import FRCore
 @objc
 public class FRUser: NSObject, NSSecureCoding {
 
+    public static var delegate: FRAuthDelegate?
+    
+    static func setStaticUser(_ user: FRUser?) {
+        let prefix = delegate?.keyForSession?() ?? "default"
+        _staticUser[prefix] = user
+    }
+    
+    static func getStaticUser() -> FRUser? {
+        let prefix = delegate?.keyForSession?() ?? "default"
+        return _staticUser[prefix]
+    }
     //  MARK: - Properties
     
     /**
@@ -30,20 +41,20 @@ public class FRUser: NSObject, NSSecureCoding {
     @objc
     public static var currentUser: FRUser? {
         get {
-            if let staticUser = _staticUser {
+            if let staticUser = getStaticUser() {
                 return staticUser
             }
             else if let frAuth = FRAuth.shared {
                 
                 FRLog.v("FRUser retrieved from SessionManager")
                 if let accessToken = try? frAuth.sessionManager.getAccessToken() {
-                    _staticUser = FRUser(token: accessToken, serverConfig: frAuth.serverConfig)
+                    setStaticUser(FRUser(token: accessToken, serverConfig: frAuth.serverConfig))
                 }
                 else if let _ = frAuth.sessionManager.getSSOToken() {
-                    _staticUser = FRUser(token: nil, serverConfig: frAuth.serverConfig)
+                    setStaticUser(FRUser(token: nil, serverConfig: frAuth.serverConfig))
                 }
                 
-                return _staticUser
+                return getStaticUser()
             }
             
             FRLog.w("Invalid SDK State: FRUser is returning 'nil'.")
@@ -51,7 +62,7 @@ public class FRUser: NSObject, NSSecureCoding {
         }
     }
     /// static property of current user
-    static var _staticUser: FRUser? = nil
+    static var _staticUser: [String:FRUser] = [:]
     /// AccessToken object associated with FRUser object
     @objc
     public var token: AccessToken? {
@@ -195,7 +206,7 @@ public class FRUser: NSObject, NSSecureCoding {
             })
             
             // Clear user object
-            FRUser._staticUser = nil
+            FRUser.setStaticUser(nil)
             frAuth.sessionManager.setCurrentUser(user: nil)
         }
         else {

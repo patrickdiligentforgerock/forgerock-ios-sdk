@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CDE64EE525020C330079F4DE /* MultiSessionCookies.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE64EE325020C330079F4DE /* MultiSessionCookies.swift */; };
 		D5015FEF24996AE50025FEB6 /* MetadataCallbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5015FEE24996AE50025FEB6 /* MetadataCallbackTests.swift */; };
 		D5054B4E244680C3007FBA92 /* DeviceProfileCallbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5054B4D244680C3007FBA92 /* DeviceProfileCallbackTests.swift */; };
 		D5094CDA23DF7F850041D5C1 /* CookieTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5094CD923DF7F850041D5C1 /* CookieTests.swift */; };
@@ -311,6 +312,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CDE64EE325020C330079F4DE /* MultiSessionCookies.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultiSessionCookies.swift; sourceTree = "<group>"; };
 		D5015FEE24996AE50025FEB6 /* MetadataCallbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataCallbackTests.swift; sourceTree = "<group>"; };
 		D5054B4D244680C3007FBA92 /* DeviceProfileCallbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProfileCallbackTests.swift; sourceTree = "<group>"; };
 		D5094CD923DF7F850041D5C1 /* CookieTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieTests.swift; sourceTree = "<group>"; };
@@ -1090,6 +1092,7 @@
 		D586CF3523358EDF007A2194 /* Network */ = {
 			isa = PBXGroup;
 			children = (
+				CDE64EE325020C330079F4DE /* MultiSessionCookies.swift */,
 				D586CF3A23358EDF007A2194 /* NetworkReachabilityMonitor.swift */,
 				D512CD40240DC41E00AF520E /* FRRestClient.swift */,
 				D5EC34FA247B329D0005A50C /* FRRequestInterceptorRegistry.swift */,
@@ -1504,6 +1507,7 @@
 				D586CFBD23358EE0007A2194 /* FRDeviceIdentifier.swift in Sources */,
 				D586CF9723358EE0007A2194 /* SingleValueCallback.swift in Sources */,
 				D586CF8223358EE0007A2194 /* SSHDetector.swift in Sources */,
+				CDE64EE525020C330079F4DE /* MultiSessionCookies.swift in Sources */,
 				D5F01B1D240F0B9F00BD48AA /* FRLog.swift in Sources */,
 				D586CFAD23358EE0007A2194 /* FRUser.swift in Sources */,
 				D586CF8423358EE0007A2194 /* FRJailbreakDetector.swift in Sources */,

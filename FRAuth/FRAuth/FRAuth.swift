@@ -20,6 +20,10 @@ import Foundation
     case registration
 }
 
+ @objc public protocol FRAuthDelegate {
+//    @objc optional func shouldSupportMultiSession() -> Bool;
+    @objc optional func keyForSession() -> String?
+}
 
 /**
  FRAuth is an abstraction of authentication and/or registration with OpenAM through FRAuth SDK.
@@ -53,6 +57,15 @@ public final class FRAuth: NSObject {
     var sessionManager: SessionManager
     /// KeychainManager instance for FRAuth to perform any keychain related operation to persist and/or retrieve credentials
     var keychainManager: KeychainManager
+    
+    public var delegate: FRAuthDelegate? {
+        didSet {
+            sessionManager.delegate = delegate
+            FRRestClient.delegate = delegate
+            FRUser.delegate = delegate
+            MultiSessionCookies.delegate = delegate
+        }
+    }
     
     func getServiceName() -> String {
         return self.authServiceName
